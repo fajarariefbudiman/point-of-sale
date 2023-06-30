@@ -14,7 +14,7 @@ type Products struct {
 	SKU               string
 	Type              string
 	Addresses         []Address       `gorm:"foreignKey:User_Id"`
-	ProductImages     []ProductImages `gorm:"foreignKey:Product_Id"`
+	ProductImages     []ProductImages `gorm:"foreignKey:Products_Id"`
 	Categories        []Categories    `gorm:"many2many:product_categories;foreignKey:Id;joinForeignKey:Category_Id;joinReferences:Product_Id"`
 	Name              string
 	Slug              string
@@ -36,14 +36,14 @@ func GetProducts(perpage int, page int) ([]Products, int, error) {
 
 	cond := db.NewDB()
 
-	err = cond.Debug().Model(&Products{}).Count(&count).Error
+	err = cond.Debug().Preload("ProductImages").Model(&Products{}).Count(&count).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
 	offset := (page - 1) * perpage
 
-	rows, err := cond.Debug().Model(&Products{}).Order("created_at desc").Limit(perpage).Offset(offset).Find(&products).Rows()
+	rows, err := cond.Debug().Preload("ProductImages").Model(&Products{}).Order("created_at desc").Limit(perpage).Offset(offset).Find(&products).Rows()
 	defer rows.Close()
 	if err != nil {
 		return nil, 0, err
@@ -61,10 +61,20 @@ func GetProducts(perpage int, page int) ([]Products, int, error) {
 	return products, int(count), nil
 }
 
-func FindProducts(slug string) (*Products, error) {
+func FindProductsBySlug(slug string) (*Products, error) {
 	var product Products
 	cond := db.NewDB()
-	err := cond.Debug().Model(&Products{}).Where("slug = ?", slug).First(product).Error
+	err := cond.Debug().Preload("ProductImages").Model(&Products{}).Where("slug = ?", slug).First(&product).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}
+func FindProductsById(productId int) (*Products, error) {
+	var product Products
+	cond := db.NewDB()
+	err := cond.Debug().Preload("ProductImages").Model(&Products{}).Where("id = ?", productId).First(&product).Error
 	if err != nil {
 		return nil, err
 	}
