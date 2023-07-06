@@ -8,11 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Templateee struct {
-	templates *template.Template
-}
-
-func (t *Templateee) Renderrr(w io.Writer, name string, data interface{}, c echo.Context) error {
+func (t *Template) RenderHome(w io.Writer, name string, data interface{}, c echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
@@ -30,7 +26,7 @@ func HomeController(c echo.Context) error {
 		return err
 	}
 
-	return t.Render(c.Response().Writer, "index.gohtml", map[string]interface{}{
+	return t.RenderHome(c.Response().Writer, "index.gohtml", map[string]interface{}{
 		"products": products,
 	}, c)
 }

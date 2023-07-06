@@ -1,5 +1,10 @@
 package models
 
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
 type CartItem struct {
 	Id               string `gorm:"size:36;not null;uniqueIndex;primary_key"`
 	Cart             Cart
@@ -16,4 +21,12 @@ type CartItem struct {
 	Sub_Total        float64
 	Created_At       []uint8
 	Updated_At       []uint8
+}
+
+func (c *CartItem) BeforeCreate(tx *gorm.DB) error {
+	if c.Id == "" {
+		c.Id = uuid.New().String()
+	}
+
+	return nil
 }

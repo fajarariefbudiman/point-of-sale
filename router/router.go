@@ -18,5 +18,7 @@ func Init() *echo.Echo {
 	e.GET("/", controllers.HomeController)
 	e.GET("/products", controllers.ProductsControllers)
 	e.GET("/products/:slug", controllers.FindProductsBySlugControllers)
+	e.GET("/carts", controllers.GetCart)
+	e.POST("/carts", controllers.AddItemCart)
 	return e
 }
