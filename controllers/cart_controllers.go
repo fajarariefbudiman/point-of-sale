@@ -31,14 +31,14 @@ func GetShopingCartId(c echo.Context) string {
 		session.Values["cart-id"] = uuid.New().String()
 		_ = session.Save(c.Request(), c.Response())
 	}
-	return fmt.Sprintf("%v", session.Values["cart-id"])
+	return fmt.Sprintf("%s", session.Values["cart-id"])
 }
 
 func GetShopingCart(cartId string) (*models.Cart, error) {
 
 	exisCart, err := models.GetCart(cartId)
 	if err != nil {
-		exisCart, err = models.CreateCart(cartId)
+		exisCart, err = models.CreateCart()
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func AddItemCart(c echo.Context) error {
 		return err
 	}
 
-	_, err = cart.AddItem(models.CartItem{
+	_, err = cart.AddItem(models.Cart_Item{
 		Product_Id: productId,
 		Quantity:   quantity,
 	})
@@ -113,7 +113,7 @@ func UpdateCart(c echo.Context) error {
 	}
 	for _, item := range cart.Cart_Items {
 		quantity, _ := strconv.Atoi(c.FormValue(item.Id))
-		_, err := models.UpdateQuantity()
+		_, err := models.UpdateQuantity(item.Id, quantity)
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, "/carts")
 		}

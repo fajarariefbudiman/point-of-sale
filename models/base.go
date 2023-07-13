@@ -43,7 +43,8 @@ func (c *Cart) CalcuCart(cartId string) (*Cart, error) {
 	updatecart.Discount_Amount = cartdiscountamount
 	updatecart.Grand_Total = cartgrandtotal
 
-	err := cond.Debug().First(&cart, "id=?", cart.Id).Updates(updatecart).Error
+	err := cond.Debug().Where("id = ?", cartId).Model(&Cart{}).Updates(&updatecart).Error
+
 	if err != nil {
 		return nil, err
 	}

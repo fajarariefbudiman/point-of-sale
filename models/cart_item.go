@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type CartItem struct {
+type Cart_Item struct {
 	Id               string `gorm:"size:36;not null;uniqueIndex;primary_key"`
 	Cart             Cart
 	Cart_Id          string
@@ -23,7 +23,7 @@ type CartItem struct {
 	Updated_At       []uint8
 }
 
-func (c *CartItem) BeforeCreate(tx *gorm.DB) error {
+func (c *Cart_Item) BeforeCreate(tx *gorm.DB) error {
 	if c.Id == "" {
 		c.Id = uuid.New().String()
 	}

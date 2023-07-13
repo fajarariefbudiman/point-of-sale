@@ -1,10 +1,14 @@
 package models
 
-import "pos-echo/db"
+import (
+	"pos-echo/db"
+
+	"github.com/google/uuid"
+)
 
 type Cart struct {
 	Id               string `gorm:"size:36;not null;uniqueIndex;primary_key"`
-	Cart_Items       []CartItem
+	Cart_Items       []Cart_Item
 	Base_Total_Price float64
 	Tax_Amount       float64
 	Tax_Percent      float64
@@ -13,11 +17,23 @@ type Cart struct {
 	Grand_Total      float64
 }
 
-func CreateCart(cartId string) (*Cart, error) {
+func GetCart(cartId string) (*Cart, error) {
 	cond := db.NewDB()
+	var cart Cart
+	err := cond.Debug().Preload("Cart_Items").Model(&Cart{}).Where("id = ?", cartId).First(&Cart{}).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &cart, nil
+}
+
+func CreateCart() (*Cart, error) {
+	cond := db.NewDB()
+	cartId := uuid.New().String()
 	cart := &Cart{
 		Id:               cartId,
-		Cart_Items:       []CartItem{},
+		Cart_Items:       []Cart_Item{},
 		Base_Total_Price: 0,
 		Tax_Amount:       0,
 		Tax_Percent:      0,
@@ -33,22 +49,11 @@ func CreateCart(cartId string) (*Cart, error) {
 	return cart, nil
 }
 
-func GetCart(cartId string) (*Cart, error) {
-	var cart Cart
+func (cart *Cart) AddItem(item Cart_Item) (*Cart_Item, error) {
 	cond := db.NewDB()
-	err := cond.Debug().Preload("Cart_Items").Model(&Cart{}).Where("id = ?", cartId).First(&cart).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &cart, nil
-}
-
-func (cart *Cart) AddItem(item CartItem) (*CartItem, error) {
-	cond := db.NewDB()
-	var exisItem, updateItem CartItem
-	var product Products
-	err := cond.Debug().Model(Products{}).Where("id = ?", item.Product_Id).First(product).Error
+	var exisItem, updateItem *Cart_Item
+	var product *Products
+	err := cond.Debug().Model(&Products{}).Where("id = ?", item.Product_Id).First(&product).Error
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +61,7 @@ func (cart *Cart) AddItem(item CartItem) (*CartItem, error) {
 	taxamount := GetTaxAmount(baseprice)
 	discountamount := 0.0
 
-	err = cond.Debug().Model(CartItem{}).Where("cart_id=?", cart.Id).Where("product_id=?", product.Id).First(&exisItem).Error
+	err = cond.Debug().Model(&Cart_Item{}).Where("cart_id = ?", &cart.Id).Where("product_id = ?", &product.Id).First(&exisItem).Error
 	if err != nil {
 		subtotal := float64(item.Quantity) * (baseprice + taxamount - discountamount)
 
@@ -86,4 +91,31 @@ func (cart *Cart) AddItem(item CartItem) (*CartItem, error) {
 		return nil, err
 	}
 	return &item, nil
+}
+
+func UpdateQuantity(itemId string, quantity int) (*Cart_Item, error) {
+	cond := db.NewDB()
+	var exisItem, updateItem Cart_Item
+	err := cond.Debug().Model(Cart_Item{}).Where("id=?", itemId).First(&exisItem).Error
+	if err != nil {
+		return nil, err
+	}
+	var product Products
+	err = cond.Debug().Model(Products{}).Where("id-?", exisItem.Product_Id).First(&product).Error
+	if err != nil {
+		return nil, err
+	}
+	baseprice := product.Price
+	taxamount := GetTaxAmount(baseprice)
+	discountamount := 0.0
+	updateItem.Quantity = quantity
+	updateItem.Base_Total = baseprice * float64(updateItem.Quantity)
+	subTotal := float64(updateItem.Quantity) * (baseprice + taxamount - discountamount)
+	updateItem.Sub_Total = subTotal
+
+	err = cond.Debug().First(&exisItem, "id=?", exisItem.Id).Updates(&updateItem).Error
+	if err != nil {
+		return nil, err
+	}
+	return &exisItem, err
 }

@@ -133,7 +133,7 @@
             </div>
         </div>
         <div class="table-responsive mt-5">
-            <form method="POST" action="/carts/update">
+            <form method="post" action="/carts/update">
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -146,17 +146,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{ range $i, $item := .cart.CartItems }}
+                        {{ range $i, $item := .cart.Cart_Items }}
                             <tr>
-                                <td scope="row"><a href="/carts/remove/{{ $item.ID }}"><i class="fa fa-times"></i></a></td>
+                                <td scope="row"><a href="/carts/remove/{{ $item.Id }}"><i class="fa fa-times"></i></a></td>
                                 <td><img src="https://placehold.jp/60x70.png" class="img-fluid" /></td>
                                 <td>{{ $item.Product.Name }}</td>
-                                <td>{{ $item.BasePrice }}</td>
-                                <td><input type="number" min="1" name="{{ $item.ID }}" class="form-control" value="{{ $item.Qty }}"/></td>
+                                <td>{{ $item.Base_Price }}</td>
+                                <td><input type="number" min="1" name="{{ $item.Id }}" class="form-control" value="{{ $item.Quantity }}"/></td>
                                 <td>{{ $item.BaseTotal }}</td>
                             </tr>
                         {{ end }}
-                        {{ if .cart.CartItems }}
+                        {{ if .cart.Cart_Items }}
                             <tr>
                                 <td colspan="6">
                                     <button type="submit" class="btn btn-primary pull-right">Update Cart</button>
@@ -180,16 +180,16 @@
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <tr>
-                            <th>Sub Total<th><td>{{ .cart.BaseTotalPrice }}</td>
+                            <th>Sub Total<th><td>{{ .cart.Base_Total_Price }}</td>
                         </tr>
                         <tr>
-                            <th>Tax ({{ .cart.TaxPercent }}%)<th><td>{{ .cart.TaxAmount }}</td>
+                            <th>Tax ({{ .cart.Tax_Percent }}%)<th><td>{{ .cart.Tax_Amount }}</td>
                         </tr>
                         <tr>
                             <th>Shipping<th><td><a href="#" class="btn btn-success btn-sm">Calculate Shipping</a></td>
                         </tr>
                         <tr>
-                            <th>Total<th><td>{{ .cart.GrandTotal }}</td>
+                            <th>Total<th><td>{{ .cart.Grand_Total }}</td>
                         </tr>
                     </table>
                 </div>
